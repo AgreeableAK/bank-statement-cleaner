@@ -1,3 +1,8 @@
+#File Extensions related to Bank Statements
+.csv
+.xlsx
+.xls
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
