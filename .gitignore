@@ -1,7 +1,7 @@
 #File Extensions related to Bank Statements
-.csv
-.xlsx
-.xls
+*.csv
+*.xlsx
+*.xls
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
