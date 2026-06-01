@@ -66,6 +66,29 @@ def remove_footer(df):
     
     return clean_df.reset_index(drop=True)
 
+def merge_split_remarks(df): # Merges overflow text from empty rows back into the main transaction row.
+    merged_rows = []
+    
+    for index, row in df.iterrows():
+        if pd.notna(row['Value Date']):
+            merged_rows.append(row.to_dict())
+        
+        else:
+            overflow_text = row['Transaction Remarks']
+            
+            if pd.notna(overflow_text) and len(merged_rows) > 0:
+             
+                current_remark = merged_rows[-1]['Transaction Remarks']
+                
+               
+                if pd.isna(current_remark):
+                    merged_rows[-1]['Transaction Remarks'] = str(overflow_text).strip()
+                else:
+                    merged_rows[-1]['Transaction Remarks'] = f"{current_remark} {str(overflow_text).strip()}"
+                
+    
+    return pd.DataFrame(merged_rows)
+
 def normalize_table(df): # Cleans up columns by removing completely empty ones and stripping whitespace.
     
     normalized_df = df.dropna(axis=1, how='all').copy()
@@ -100,20 +123,24 @@ def export_to_csv(df, original_path): # Exports the cleaned dataframe to a CSV f
     return output_path
 
 if __name__ == "__main__":
-
     file_path = Path("~\\Documents\\Projects\\bank-statement-cleaner\\OpTransactionHistory29-05-2026(Redacted).xls")
-    df = load_statement(file_path)
-
     raw_data = load_statement(file_path)
-
 
     if raw_data is not None:
         start_row = find_table_start(raw_data)
         
         if start_row is not None:
+            # 1. Remove the headers and junk rows above the transaction table, and set the first row as column names
             transaction_table = extract_table(raw_data, start_row)
-            transactions_only = remove_footer(transaction_table)
-            final_clean_table = normalize_table(transactions_only)
-            chronological_table = reverse_transactions(final_clean_table)
             
+            # 2. Normalize columns first so we have clean names (like 'Value Date')
+            normalized_table = normalize_table(transaction_table)
+            
+            # 3. Merge split remarks (This automatically ignores footers!)
+            merged_remarks_table = merge_split_remarks(normalized_table)
+            
+            # 4. Reverse chronological order
+            chronological_table = reverse_transactions(merged_remarks_table)
+            
+            # 5. Export the cleaned table to CSV
             export_to_csv(chronological_table, file_path)
