@@ -42,7 +42,7 @@ def find_table_start(df):
     print(f"Error: Could not find start of transaction table. Please check the file format.")
 
 
-def extract_table(df, start_index):
+def extract_table(df, start_index): #Remove junk rows above the table and set the first row as header
 
     cleaned_df = df.iloc[start_index:].copy()
 
@@ -52,6 +52,19 @@ def extract_table(df, start_index):
     cleaned_df = cleaned_df.reset_index(drop=True)
 
     return cleaned_df
+
+def remove_footer(df):
+    
+    total_columns = len(df.columns)
+    
+    minimum_valid_cells = total_columns // 2 
+    
+    clean_df = df.dropna(thresh=minimum_valid_cells).copy()
+    
+    rows_dropped = len(df) - len(clean_df)
+    print(f"Dropped {rows_dropped} footer/empty rows.")
+    
+    return clean_df.reset_index(drop=True)
 
 if __name__ == "__main__":
 
@@ -67,7 +80,12 @@ if __name__ == "__main__":
         
         if start_row is not None:
             transaction_table = extract_table(raw_data, start_row)
-            
-            # Print the first 5 rows to verify it worked!
+            transaction_table = remove_footer(transaction_table)
+         
+            # Print the first 5 rows
             print("\nExtracted Table Preview:")
             print(transaction_table.head()) 
+          
+            # Print the last 5 rows
+            print("\nCleaned Table (Bottom 5 Rows):")
+            print(transaction_table.tail())
