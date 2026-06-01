@@ -88,6 +88,17 @@ def reverse_transactions(df): # Reverses the row order of the dataframe so oldes
     
     return reversed_df
 
+def export_to_csv(df, original_path): # Exports the cleaned dataframe to a CSV file.
+    
+    new_filename = f"{original_path.stem}_CLEANED.csv"
+    
+    output_path = original_path.parent / new_filename
+    
+    df.to_csv(output_path, index=False)
+    
+    print(f"\nSuccess! Cleaned data exported to: {output_path.name}")
+    return output_path
+
 if __name__ == "__main__":
 
     file_path = Path("~\\Documents\\Projects\\bank-statement-cleaner\\OpTransactionHistory29-05-2026(Redacted).xls")
@@ -105,6 +116,4 @@ if __name__ == "__main__":
             final_clean_table = normalize_table(transactions_only)
             chronological_table = reverse_transactions(final_clean_table)
             
-            print("\nFully Normalized Table:")
-            print(chronological_table.head())
-            print(f"\nRemaining Columns: {list(chronological_table.columns)}")
+            export_to_csv(chronological_table, file_path)
