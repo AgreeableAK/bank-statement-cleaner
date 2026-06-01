@@ -66,6 +66,28 @@ def remove_footer(df):
     
     return clean_df.reset_index(drop=True)
 
+def normalize_table(df): # Cleans up columns by removing completely empty ones and stripping whitespace.
+    
+    normalized_df = df.dropna(axis=1, how='all').copy()
+    
+    clean_columns = []
+    for col in normalized_df.columns:
+  
+        clean_col_name = str(col).strip()
+        clean_columns.append(clean_col_name)
+        
+
+    normalized_df.columns = clean_columns
+    
+    return normalized_df
+
+def reverse_transactions(df): # Reverses the row order of the dataframe so oldest transactions are first.
+    
+    reversed_df = df.iloc[::-1].copy()
+    reversed_df = reversed_df.reset_index(drop=True)
+    
+    return reversed_df
+
 if __name__ == "__main__":
 
     file_path = Path("~\\Documents\\Projects\\bank-statement-cleaner\\OpTransactionHistory29-05-2026(Redacted).xls")
@@ -75,17 +97,14 @@ if __name__ == "__main__":
 
 
     if raw_data is not None:
-    
         start_row = find_table_start(raw_data)
         
         if start_row is not None:
             transaction_table = extract_table(raw_data, start_row)
-            transaction_table = remove_footer(transaction_table)
-         
-            # Print the first 5 rows
-            print("\nExtracted Table Preview:")
-            print(transaction_table.head()) 
-          
-            # Print the last 5 rows
-            print("\nCleaned Table (Bottom 5 Rows):")
-            print(transaction_table.tail())
+            transactions_only = remove_footer(transaction_table)
+            final_clean_table = normalize_table(transactions_only)
+            chronological_table = reverse_transactions(final_clean_table)
+            
+            print("\nFully Normalized Table:")
+            print(chronological_table.head())
+            print(f"\nRemaining Columns: {list(chronological_table.columns)}")
