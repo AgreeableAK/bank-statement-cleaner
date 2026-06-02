@@ -58,16 +58,23 @@ Example:
 
 Input:
 
-```text
-statement.xls
-```
+<p align="center">
+  <img src="project_screenshot/Example_Statement_Header.png" width="800"/>
+</p>
+<p align="center">
+  <img src="project_screenshot/Example_Statement_Footer.png" width="800"/>
+</p>
 
 Output:
+Without "-r" parameter.
+<p align="center">
+  <img src="project_screenshot/Cleaned_Example_Statement__Without_Reversal.png" width="800"/>
+</p>
 
-```text
-statement_CLEANED.csv
-```
-
+With "-r" Parameter.
+<p align="center">
+  <img src="project_screenshot/Cleaned_Example_Statement_Reversal.png" width="800"/>
+</p>
 
 ## Project Goal
 
