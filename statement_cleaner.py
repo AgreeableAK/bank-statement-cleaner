@@ -1,3 +1,4 @@
+import argparse
 import pandas as pd
 from pathlib import Path
 
@@ -122,25 +123,54 @@ def export_to_csv(df, original_path): # Exports the cleaned dataframe to a CSV f
     print(f"\nSuccess! Cleaned data exported to: {output_path.name}")
     return output_path
 
+def parse_cli_arguments():
+    """Sets up terminal flags and parses command-line inputs."""
+    parser = argparse.ArgumentParser(
+        description="A robust tool to clean messy bank statement Excel files for Actual Budget."
+    )
+    
+    # Define the input file argument
+    parser.add_argument(
+        "-i", "--input",
+        required=True,
+        type=str,
+        help="Path to the raw Excel bank statement file (.xls or .xlsx)"
+    )
+    
+    # Define an optional toggle to reverse chronological order (Defaults to False)
+    parser.add_argument(
+        "-r", "--reverse",
+        action="store_true",
+        help="Pass this flag if the statement needs to be reversed to Oldest -> Newest order."
+    )
+    
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
-    file_path = Path("~\\Documents\\Projects\\bank-statement-cleaner\\OpTransactionHistory29-05-2026(Redacted).xls")
+    args = parse_cli_arguments()
+    
+    # Convert the input string into a robust Path object
+    file_path = Path(args.input).expanduser()
+    
+    # Load the data
     raw_data = load_statement(file_path)
 
     if raw_data is not None:
         start_row = find_table_start(raw_data)
         
         if start_row is not None:
-            # 1. Remove the headers and junk rows above the transaction table, and set the first row as column names
+            # Execute data cleaning pipeline
             transaction_table = extract_table(raw_data, start_row)
-            
-            # 2. Normalize columns first so we have clean names (like 'Value Date')
             normalized_table = normalize_table(transaction_table)
-            
-            # 3. Merge split remarks (This automatically ignores footers!)
             merged_remarks_table = merge_split_remarks(normalized_table)
             
-            # 4. Reverse chronological order
-            chronological_table = reverse_transactions(merged_remarks_table)
+            # CONDITIONAL ORDER REVERSAL, we only reverse if the user asks for it in the terminal!
+            if args.reverse:
+                print("Reversing transaction order to oldest -> newest...")
+                final_table = reverse_transactions(merged_remarks_table)
+            else:
+                final_table = merged_remarks_table
             
-            # 5. Export the cleaned table to CSV
-            export_to_csv(chronological_table, file_path)
+            # Export!
+            export_to_csv(final_table, file_path)
