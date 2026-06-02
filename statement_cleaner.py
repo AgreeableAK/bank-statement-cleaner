@@ -54,7 +54,7 @@ def extract_table(df, start_index): #Remove junk rows above the table and set th
 
     return cleaned_df
 
-def remove_footer(df):
+def remove_footer(df): 
     
     total_columns = len(df.columns)
     
@@ -123,8 +123,7 @@ def export_to_csv(df, original_path): # Exports the cleaned dataframe to a CSV f
     print(f"\nSuccess! Cleaned data exported to: {output_path.name}")
     return output_path
 
-def parse_cli_arguments():
-    """Sets up terminal flags and parses command-line inputs."""
+def parse_cli_arguments(): # Sets up terminal flags and parses command-line inputs.
     parser = argparse.ArgumentParser(
         description="A robust tool to clean messy bank statement Excel files for Actual Budget."
     )
@@ -150,27 +149,27 @@ def parse_cli_arguments():
 if __name__ == "__main__":
     args = parse_cli_arguments()
     
-    # Convert the input string into a robust Path object
+    
     file_path = Path(args.input).expanduser()
     
-    # Load the data
+
     raw_data = load_statement(file_path)
 
     if raw_data is not None:
         start_row = find_table_start(raw_data)
         
         if start_row is not None:
-            # Execute data cleaning pipeline
+            
             transaction_table = extract_table(raw_data, start_row)
             normalized_table = normalize_table(transaction_table)
             merged_remarks_table = merge_split_remarks(normalized_table)
             
-            # CONDITIONAL ORDER REVERSAL, we only reverse if the user asks for it in the terminal!
+            
             if args.reverse:
                 print("Reversing transaction order to oldest -> newest...")
                 final_table = reverse_transactions(merged_remarks_table)
             else:
                 final_table = merged_remarks_table
             
-            # Export!
+            # Export the cleaned table to CSV
             export_to_csv(final_table, file_path)
