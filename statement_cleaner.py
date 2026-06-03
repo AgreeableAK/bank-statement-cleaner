@@ -113,13 +113,16 @@ def reverse_transactions(df): # Reverses the row order of the dataframe so oldes
     return reversed_df
 
 def export_to_csv(df, original_path): # Exports the cleaned dataframe to a CSV file.
-    
     new_filename = f"{original_path.stem}_CLEANED.csv"
-    
     output_path = original_path.parent / new_filename
-    
-    df.to_csv(output_path, index=False)
-    
+
+    try:
+        df.to_csv(output_path, index=False, encoding='utf-8-sig')
+    except PermissionError:
+        print(f"\nWarning: '{new_filename}' is open in another program.")
+        print("Close it in Excel and re-run the script.")
+        return None
+
     print(f"\nSuccess! Cleaned data exported to: {output_path.name}")
     return output_path
 
@@ -171,5 +174,6 @@ if __name__ == "__main__":
             else:
                 final_table = merged_remarks_table
             
+            print("\nColumns in final CSV:", final_table.columns.tolist())
             # Export the cleaned table to CSV
             export_to_csv(final_table, file_path)
